@@ -73,16 +73,16 @@ class CocoDataset(Dataset):
             data_dict['image'] = self.vision_preprocessor(image)
             # Run text preprocess 
             text = data_info['conversations']
-            input_ids, labels = self.text_preprocessor(text, self.default_conversation, self.is_multimodal, self.mm_use_im_start_end,has_image,self.tokenizer)
-            data_dict['input_ids'] = input_ids
-            data_dict['labels'] = labels
+            print(self.text_preprocessor(text,has_image))
+            # data_dict['input_ids'] = input_ids
+            # data_dict['labels'] = labels
         else:
             # Make fake image data
             crop_size = self.vision_tower.crop_size
             data_dict['image'] = torch.zeros(3, crop_size['height'], crop_size['width'])
             # Run text preprocess
             text = data_info['conversations']
-            input_ids, labels = self.text_preprocessor(text, self.default_conversation, self.is_multimodal, self.mm_use_im_start_end,has_image,self.tokenizer)
+            input_ids, labels = self.text_preprocessor(text, has_image)
             data_dict['input_ids'] = input_ids
             data_dict['labels'] = labels
 
