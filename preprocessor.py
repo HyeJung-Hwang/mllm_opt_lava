@@ -1,6 +1,8 @@
 from PIL import Image
 from typing import Any
 
+from llava import conversation as conversation_lib
+
 
 class VisionPreprocessor():
     def __init__(
@@ -40,21 +42,30 @@ class VisionPreprocessor():
 class TextPreprocessor():
     def __init__(self) -> None:
         self.DEFAULT_IMAGE_TOKEN = "<image>"
+        self.DEFAULT_IM_START_TOKEN = "<im_start>"
+        self.DEFAULT_IM_END_TOKEN = "<im_end>"
 
-    def __call__(self, is_multimodal,sources) -> Any:
- 
-        if not is_multimodal:
-            return sources
+    def __call__(
+            self, 
+            sources,
+            conversation_lib.default_conversation,
+            is_multimodal,
+            mm_use_im_start_end
+        ) -> Any:
+        
+        # if is_multimodal:
+        #     return sources
 
-        for source in sources:
-            for sentence in source:
-                if DEFAULT_IMAGE_TOKEN in sentence['value']:
-                    sentence['value'] = sentence['value'].replace(DEFAULT_IMAGE_TOKEN, '').strip()
-                    sentence['value'] = DEFAULT_IMAGE_TOKEN + '\n' + sentence['value']
-                    sentence['value'] = sentence['value'].strip()
-                    if "mmtag" in conversation_lib.default_conversation.version:
-                        sentence['value'] = sentence['value'].replace(DEFAULT_IMAGE_TOKEN, '<Image>' + DEFAULT_IMAGE_TOKEN + '</Image>')
-                replace_token = DEFAULT_IMAGE_TOKEN
-                if data_args.mm_use_im_start_end:
-                    replace_token = DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
-                sentence["value"] = sentence["value"].replace(DEFAULT_IMAGE_TOKEN, replace_token)
+        # for source in sources:
+        #     for sentence in source:
+        #         if self.DEFAULT_IMAGE_TOKEN in sentence['value']:
+        #             sentence['value'] = sentence['value'].replace(self.DEFAULT_IMAGE_TOKEN, '').strip()
+        #             sentence['value'] = self.DEFAULT_IMAGE_TOKEN + '\n' + sentence['value']
+        #             sentence['value'] = sentence['value'].strip()
+        #             if "mmtag" in conversation_lib.default_conversation.version:
+        #                 sentence['value'] = sentence['value'].replace(self.DEFAULT_IMAGE_TOKEN, '<Image>' + self.DEFAULT_IMAGE_TOKEN + '</Image>')
+        #         replace_token = self.DEFAULT_IMAGE_TOKEN
+        #         if mm_use_im_start_end:
+        #             replace_token = self.DEFAULT_IM_START_TOKEN + replace_token + self.DEFAULT_IM_END_TOKEN
+        #         sentence["value"] = sentence["value"].replace(self.DEFAULT_IMAGE_TOKEN, replace_token)
+        # return sources
