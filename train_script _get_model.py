@@ -39,7 +39,7 @@ def smart_tokenizer_and_embedding_resize(
 if __name__ == "__main__":
 
 
-    # Set dataset
+    # Set data, model, and training arguments
     data_args = DataArguments(
         data_path="/home/hyeonan/LLaVA/playground/data/llava_v1_5_mix665k.json",
         lazy_preprocess=True,
@@ -47,7 +47,6 @@ if __name__ == "__main__":
         image_aspect_ratio="pad",
     )
 
-    # Set model
     model_args = ModelArguments(
         model_name_or_path="lmsys/vicuna-7b-v1.5",
         version="v1",
@@ -84,17 +83,27 @@ if __name__ == "__main__":
         mm_projector_lr=2e-5,
         model_max_length=512
     )
+
+    # Set local rank, compute dtype, and attention implementation
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
     attn_implementation = "flash_attention_2"
 
-    data_args, trainig_args, model, tokenizer = get_model(
+    # Get model
+    model, tokenizer = get_model(
         model_args=model_args,
         training_args=training_args,
         data_args=data_args,
         attn_implementation=attn_implementation,
     )
-    
+    model = model.to(training_args.device)
+
+    # Update data_args and training_args
+    data_args.image_processor = model.get_vision_tower().image_processor
+    data_args.is_multimodal = True
+    training_args.use_im_start_end = model_args.mm_use_im_start_end
+
+    # Set dataset
     train_dataset = LazySupervisedDataset(
         tokenizer=tokenizer,
         data_path="/home/hyeonan/LLaVA/playground/data/llava_v1_5_mix665k.json",
@@ -108,10 +117,9 @@ if __name__ == "__main__":
     }
     train_loader = torch.utils.data.DataLoader(train_dataset, **dataloader_params)
     batch = next(iter(train_loader))
-
     batch = {key: value.to(training_args.device) for key, value in batch.items()}
-    model = model.to(training_args.device)
     
+    # Train
     with torch.autocast(device_type='cuda'):
         (
             input_ids,
